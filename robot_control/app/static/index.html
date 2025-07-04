@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Robot Coverage Planner</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 960px;
+        margin: 2rem auto;
+        text-align: center;
+      }
+      #canvas {
+        border: 1px solid #555;
+      }
+      #controls {
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Robot Coverage Planner</h1>
+
+    <div id="controls">
+      <input id="plan-id" type="number" placeholder="Plan ID" />
+      <button id="load-btn">Load</button>
+    </div>
+
+    <canvas id="canvas" width="500" height="500"></canvas>
+
+    <script>
+      const loadBtn = document.getElementById("load-btn");
+      const planInput = document.getElementById("plan-id");
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      loadBtn.addEventListener("click", async () => {
+        const id = planInput.value;
+        if (!id) {
+          alert("Please enter a Plan ID");
+          return;
+        }
+
+        try {
+          const res = await fetch(`/plan/${id}`);
+          if (!res.ok) {
+            throw new Error("Plan not found");
+          }
+          const data = await res.json();
+          playback(data.points);
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      function playback(points) {
+        if (!points.length) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Determine scaling factors based on the max X/Y in points
+        const maxX = Math.max(...points.map((p) => p.x));
+        const maxY = Math.max(...points.map((p) => p.y));
+        const padding = 20;
+        const scaleX = (canvas.width - padding * 2) / maxX;
+        const scaleY = (canvas.height - padding * 2) / maxY;
+
+        let idx = 0;
+        function drawNext() {
+          if (idx >= points.length) return;
+          const { x, y } = points[idx];
+          const drawX = x * scaleX + padding;
+          // Flip Y so that origin (0,0) is bottom-left visually
+          const drawY = canvas.height - (y * scaleY + padding);
+
+          ctx.fillStyle = "steelblue";
+          ctx.beginPath();
+          ctx.arc(drawX, drawY, 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          idx += 1;
+          requestAnimationFrame(drawNext);
+        }
+
+        drawNext();
+      }
+    </script>
+  </body>
+</html> 
