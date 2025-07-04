@@ -140,7 +140,7 @@ curl -X POST "http://127.0.0.1:8000/plan" \
 - Watch the robot's path animate on the Canvas.
 
 ---
-## How Ui and Output Look Like
+## How Ui and Output Looks Like
 ![image](https://github.com/user-attachments/assets/26050890-062c-4fa5-81ba-e8336d2761cf)
 
 
